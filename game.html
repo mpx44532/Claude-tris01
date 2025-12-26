@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game - Multiplayer Tic-Tac-Toe</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="game-page">
+    <div class="header">
+        <h1>Multiplayer Tic-Tac-Toe</h1>
+        <div class="user-info">
+            <span>Welcome, <strong id="currentUsername"></strong>!</span>
+            <button id="logoutBtn" class="btn btn-small">Logout</button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <!-- Challenge Section -->
+        <div class="challenge-section">
+            <h2>Start New Challenge</h2>
+            <div class="challenge-controls">
+                <label for="opponentSelect">Select Opponent:</label>
+                <select id="opponentSelect">
+                    <option value="">-- Select Player --</option>
+                </select>
+                <button id="challengeBtn" class="btn btn-primary">Send Challenge</button>
+            </div>
+        </div>
+
+        <!-- Active Games List -->
+        <div class="games-list-section">
+            <h2>Your Games</h2>
+            <div id="gamesList" class="games-list">
+                <p class="no-games">No active games. Start a challenge!</p>
+            </div>
+        </div>
+
+        <!-- Game Board Section -->
+        <div class="game-board-section" id="gameBoardSection" style="display: none;">
+            <div class="game-info">
+                <h2 id="gameTitle">Game</h2>
+                <p id="gameStatus"></p>
+                <p id="turnIndicator"></p>
+            </div>
+
+            <div class="board-container">
+                <div id="gameBoard" class="game-board">
+                    <div class="cell" data-index="0"></div>
+                    <div class="cell" data-index="1"></div>
+                    <div class="cell" data-index="2"></div>
+                    <div class="cell" data-index="3"></div>
+                    <div class="cell" data-index="4"></div>
+                    <div class="cell" data-index="5"></div>
+                    <div class="cell" data-index="6"></div>
+                    <div class="cell" data-index="7"></div>
+                    <div class="cell" data-index="8"></div>
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <button id="confirmTurnBtn" class="btn btn-confirm" disabled>Confirm Turn</button>
+                <button id="cancelGameBtn" class="btn btn-danger">Cancel Game</button>
+                <button id="backToListBtn" class="btn btn-secondary">Back to Games</button>
+            </div>
+        </div>
+
+        <!-- Player Results Section -->
+        <div class="results-section">
+            <h2>My Game Results</h2>
+            <div id="playerResults" class="results-table-container">
+                <p class="no-results">No games played yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
