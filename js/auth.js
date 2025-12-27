@@ -6,51 +6,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('password');
     const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
     const confirmPasswordInput = document.getElementById('confirmPassword');
-    const loginBtn = document.getElementById('loginBtn');
+    const submitBtn = document.getElementById('submitBtn');
     const infoText = document.getElementById('infoText');
+    const loginModeBtn = document.getElementById('loginModeBtn');
+    const registerModeBtn = document.getElementById('registerModeBtn');
 
-    let isNewUser = false;
-    let checkingUser = false;
+    let isRegisterMode = false;
 
-    // Check if user exists when nickname field loses focus
-    nicknameInput.addEventListener('blur', async function() {
-        const nickname = nicknameInput.value.trim();
+    // Toggle between login and register mode
+    loginModeBtn.addEventListener('click', function() {
+        isRegisterMode = false;
+        loginModeBtn.classList.add('active');
+        registerModeBtn.classList.remove('active');
+        confirmPasswordGroup.style.display = 'none';
+        confirmPasswordInput.removeAttribute('required');
+        submitBtn.textContent = 'Login';
+        infoText.textContent = '';
+    });
 
-        if (!nickname || checkingUser) return;
-
-        checkingUser = true;
-        infoText.textContent = 'Checking user...';
-
-        try {
-            const { data, error } = await supabase
-                .from('users')
-                .select('id, nickname')
-                .eq('nickname', nickname)
-                .maybeSingle();
-
-            if (error) throw error;
-
-            if (data) {
-                // Existing user
-                isNewUser = false;
-                confirmPasswordGroup.style.display = 'none';
-                confirmPasswordInput.removeAttribute('required');
-                infoText.textContent = 'Welcome back!';
-                loginBtn.textContent = 'Login';
-            } else {
-                // New user
-                isNewUser = true;
-                confirmPasswordGroup.style.display = 'block';
-                confirmPasswordInput.setAttribute('required', 'required');
-                infoText.textContent = 'New user - please confirm your password';
-                loginBtn.textContent = 'Register';
-            }
-        } catch (error) {
-            console.error('Error checking user:', error);
-            infoText.textContent = 'Error checking user. Please try again.';
-        } finally {
-            checkingUser = false;
-        }
+    registerModeBtn.addEventListener('click', function() {
+        isRegisterMode = true;
+        registerModeBtn.classList.add('active');
+        loginModeBtn.classList.remove('active');
+        confirmPasswordGroup.style.display = 'block';
+        confirmPasswordInput.setAttribute('required', 'required');
+        submitBtn.textContent = 'Register';
+        infoText.textContent = 'Enter your details to register or update password';
     });
 
     // Handle form submission
@@ -66,8 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (isNewUser) {
-            // Register new user
+        if (isRegisterMode) {
+            // Register mode: Insert new user or update existing user's password
             if (password !== confirmPassword) {
                 alert('Passwords do not match!');
                 return;
@@ -79,33 +60,51 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const { data, error } = await supabase
+                // Check if user exists
+                const { data: existingUser, error: checkError } = await supabase
                     .from('users')
-                    .insert([
-                        { nickname: nickname, password: password, is_admin: false }
-                    ])
-                    .select()
-                    .single();
+                    .select('*')
+                    .eq('nickname', nickname)
+                    .maybeSingle();
 
-                if (error) {
-                    if (error.code === '23505') { // Unique constraint violation
-                        alert('This nickname is already taken');
-                    } else {
-                        throw error;
-                    }
-                    return;
+                if (checkError) throw checkError;
+
+                if (existingUser) {
+                    // User exists - update password
+                    const { data, error } = await supabase
+                        .from('users')
+                        .update({ password: password })
+                        .eq('nickname', nickname)
+                        .select()
+                        .single();
+
+                    if (error) throw error;
+
+                    setCurrentUser(data);
+                    alert('Password updated successfully! Welcome back, ' + nickname);
+                    window.location.href = 'game.html';
+                } else {
+                    // New user - insert
+                    const { data, error } = await supabase
+                        .from('users')
+                        .insert([
+                            { nickname: nickname, password: password, is_admin: false }
+                        ])
+                        .select()
+                        .single();
+
+                    if (error) throw error;
+
+                    setCurrentUser(data);
+                    alert('Registration successful! Welcome, ' + nickname);
+                    window.location.href = 'game.html';
                 }
-
-                // Save user to session
-                setCurrentUser(data);
-                alert('Registration successful! Welcome, ' + nickname);
-                window.location.href = 'game.html';
             } catch (error) {
-                console.error('Error registering:', error);
-                alert('Registration failed. Please try again.');
+                console.error('Error in register mode:', error);
+                alert('Registration/Update failed. Please try again.');
             }
         } else {
-            // Login existing user
+            // Login mode: Authenticate existing user
             try {
                 const { data, error } = await supabase
                     .from('users')
@@ -117,11 +116,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (error) throw error;
 
                 if (data) {
-                    // Save user to session
                     setCurrentUser(data);
                     window.location.href = 'game.html';
                 } else {
-                    alert('Invalid password');
+                    alert('Invalid nickname or password');
                 }
             } catch (error) {
                 console.error('Error logging in:', error);

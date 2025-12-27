@@ -37,6 +37,35 @@ body {
     font-size: 24px;
 }
 
+.mode-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #333333;
+    border-radius: 5px;
+    background-color: #2a2a2a;
+    color: #888888;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.mode-btn:hover {
+    border-color: #8b5cf6;
+}
+
+.mode-btn.active {
+    background-color: #8b5cf6;
+    border-color: #8b5cf6;
+    color: #ffffff;
+}
+
 .form-group {
     margin-bottom: 20px;
 }
