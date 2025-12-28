@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error('Error in register mode:', error);
-                alert('Registration/Update failed. Please try again.');
+                alert('Registration/Update failed.\n\nError: ' + (error.message || error.toString()) + '\n\nCheck console for details.');
             }
         } else {
             // Login mode: Authenticate existing user
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error('Error logging in:', error);
-                alert('Login failed. Please try again.');
+                alert('Login failed.\n\nError: ' + (error.message || error.toString()));
             }
         }
     });
