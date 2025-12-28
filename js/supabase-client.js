@@ -2,29 +2,12 @@
 const SUPABASE_URL = 'https://zdkdvwyhorvmbkvltuci.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpka2R2d3lob3J2bWJrdmx0dWNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3Mjg1NDIsImV4cCI6MjA4MjMwNDU0Mn0.o76qtSYUlFSf3FfNIaZBe9wQreQ4JBe-1WugpemzCqs';
 
-// Initialize Supabase client - wait for library to load
-let supabase;
+// Initialize Supabase client using the global library
+// Store the library reference first to avoid naming conflicts
+const supabaseLib = window.supabase;
+const supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Function to initialize Supabase when library is ready
-function initSupabase() {
-    if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase client initialized successfully');
-        return true;
-    }
-    return false;
-}
-
-// Try to initialize immediately
-if (!initSupabase()) {
-    // If not ready, wait for window load
-    window.addEventListener('load', function() {
-        if (!initSupabase()) {
-            console.error('Failed to load Supabase library from CDN');
-            alert('Error: Supabase library failed to load. Please refresh the page.');
-        }
-    });
-}
+console.log('Supabase client initialized:', supabase ? 'Success' : 'Failed');
 
 // Helper function to get current user from session storage
 function getCurrentUser() {
