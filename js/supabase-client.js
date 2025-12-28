@@ -2,8 +2,15 @@
 const SUPABASE_URL = 'https://zdkdvwyhorvmbkvltuci.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpka2R2d3lob3J2bWJrdmx0dWNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3Mjg1NDIsImV4cCI6MjA4MjMwNDU0Mn0.o76qtSYUlFSf3FfNIaZBe9wQreQ4JBe-1WugpemzCqs';
 
-// Initialize Supabase client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize Supabase client (v2 syntax)
+// Extract createClient from the global supabase object loaded from CDN
+let supabase;
+if (typeof window.supabase !== 'undefined') {
+    const { createClient } = window.supabase;
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+    console.error('Supabase library not loaded!');
+}
 
 // Helper function to get current user from session storage
 function getCurrentUser() {
