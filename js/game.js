@@ -5,6 +5,7 @@ let currentGame = null;
 let pendingMove = null;
 let lastMoveIndex = null;
 let lastCheckedChallenges = [];
+let refreshInterval = null;
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Check authentication
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadPlayerResults();
 
     // Set up auto-refresh for games list and challenges (every 5 seconds)
-    setInterval(async () => {
+    refreshInterval = setInterval(async () => {
         await loadGamesList();
         await checkForNewChallenges();
         if (currentGame) {
@@ -49,7 +50,16 @@ function setupEventListeners() {
 }
 
 function logout() {
+    // Clear the auto-refresh interval
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+
+    // Clear user session
     clearCurrentUser();
+
+    // Redirect to login page
     window.location.href = 'login.html';
 }
 
