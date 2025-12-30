@@ -279,7 +279,26 @@ async function refreshCurrentGame() {
             return;
         }
 
+        // Preserve pending move during refresh
+        const savedPendingMove = pendingMove;
+        const savedLastMoveIndex = lastMoveIndex;
+
         currentGame = data;
+
+        // If there was a pending move, restore it
+        if (savedPendingMove !== null && savedLastMoveIndex !== null) {
+            const isChallenger = currentGame.challenger.id === currentUser.id;
+            const mySymbol = isChallenger ? 'X' : 'O';
+
+            // Re-apply the pending move to the board state
+            const newBoard = [...currentGame.board_state];
+            newBoard[savedPendingMove] = mySymbol;
+            currentGame.board_state = newBoard;
+
+            pendingMove = savedPendingMove;
+            lastMoveIndex = savedLastMoveIndex;
+        }
+
         renderBoard();
         updateControls();
 
