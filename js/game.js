@@ -4,6 +4,7 @@ let currentUser = null;
 let currentGame = null;
 let pendingMove = null;
 let lastMoveIndex = null;
+let lastCheckedChallenges = [];
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Check authentication
@@ -22,9 +23,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadGamesList();
     await loadPlayerResults();
 
-    // Set up auto-refresh for games list (every 5 seconds)
+    // Set up auto-refresh for games list and challenges (every 5 seconds)
     setInterval(async () => {
         await loadGamesList();
+        await checkForNewChallenges();
         if (currentGame) {
             await refreshCurrentGame();
         }
@@ -93,6 +95,9 @@ async function checkPendingChallenges() {
         if (error) throw error;
 
         if (data && data.length > 0) {
+            // Store these challenge IDs so we don't alert again
+            lastCheckedChallenges = data.map(g => g.id);
+
             const challenges = data.map(g => g.challenger.nickname).join(', ');
             const accept = confirm(`You have ${data.length} pending challenge(s) from: ${challenges}\n\nView your games now?`);
 
@@ -103,6 +108,53 @@ async function checkPendingChallenges() {
         }
     } catch (error) {
         console.error('Error checking challenges:', error);
+    }
+}
+
+// Check for new challenges (called during auto-refresh)
+async function checkForNewChallenges() {
+    try {
+        const { data, error } = await supabase
+            .from('games')
+            .select(`
+                id,
+                status,
+                challenger:challenger_id(nickname)
+            `)
+            .eq('defender_id', currentUser.id)
+            .eq('status', 'pending');
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            // Find new challenges that weren't in the last check
+            const newChallenges = data.filter(g => !lastCheckedChallenges.includes(g.id));
+
+            if (newChallenges.length > 0) {
+                // Update the tracked challenges
+                lastCheckedChallenges = data.map(g => g.id);
+
+                // Alert user about new challenges
+                const challengerNames = newChallenges.map(g => g.challenger.nickname).join(', ');
+                const accept = confirm(`New challenge(s) from: ${challengerNames}\n\nView your games now?`);
+
+                if (accept) {
+                    // If viewing a game, go back to list
+                    if (currentGame) {
+                        backToGamesList();
+                    }
+                    // If only one new challenge, auto-load it
+                    if (newChallenges.length === 1) {
+                        await loadGame(newChallenges[0].id);
+                    }
+                }
+            }
+        } else {
+            // No pending challenges, clear the list
+            lastCheckedChallenges = [];
+        }
+    } catch (error) {
+        console.error('Error checking for new challenges:', error);
     }
 }
 
